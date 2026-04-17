@@ -10,22 +10,14 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Analista IA - GEIP", page_icon="🏢", layout="wide")
 
+# (Mantenha sua função criar_pdf_buffer aqui igual ao que já temos)
 def criar_pdf_buffer(texto):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
-    
     if 'Disclaimer' not in styles:
-        styles.add(ParagraphStyle(
-            name='Disclaimer', parent=styles['Normal'], fontSize=8,
-            textColor='gray', alignment=1, fontName='Helvetica-Oblique'
-        ))
-
-    story = [
-        Paragraph("<b>GEIP - Relatório Executivo Gerencial</b>", styles["Heading1"]),
-        Spacer(1, 20)
-    ]
-
+        styles.add(ParagraphStyle(name='Disclaimer', parent=styles['Normal'], fontSize=8, textColor='gray', alignment=1, fontName='Helvetica-Oblique'))
+    story = [Paragraph("<b>GEIP - Relatório Executivo Gerencial</b>", styles["Heading1"]), Spacer(1, 20)]
     texto_tratado = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)
     for linha in texto_tratado.split('\n'):
         linha = linha.strip()
@@ -35,138 +27,129 @@ def criar_pdf_buffer(texto):
         estilo = styles["Heading2"] if linha.startswith('#') else styles["Normal"]
         linha = linha.replace('#', '').strip()
         story.append(Paragraph(linha, estilo))
-    
     story.append(Spacer(1, 30))
     story.append(HRFlowable(width="100%", thickness=1, color="lightgrey"))
     story.append(Paragraph("Este relatório foi gerado por Inteligência Artificial e não substitui a análise humana.", styles["Disclaimer"]))
-
     doc.build(story)
     buffer.seek(0)
     return buffer
 
-# --- CSS REFINADO (AJUSTE DE ESPAÇAMENTO E UNIFICAÇÃO) ---
+# --- CSS TOTALMENTE REVISADO (UNIFICAÇÃO DE BLOCOS) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap');
     
-    /* Remove o espaço em branco exagerado no topo do Streamlit */
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 0rem;
-    }
-
     .stApp {
         background-color: #023440;
         font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
     }
 
-    /* Bloco Unificado (Cabeçalho + Corpo) */
+    /* Remove espaços inúteis do topo */
+    .block-container { padding-top: 2rem; }
+
+    /* CARD ÚNICO (Branco) */
     .unified-card {
         background-color: #ffffff;
         border-radius: 12px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        max-width: 900px;
+        max-width: 850px;
         margin: 0 auto;
-        overflow: hidden; /* Garante que as bordas arredondadas cortem o conteúdo */
+        padding: 0;
+        overflow: hidden;
     }
 
-    /* Cabeçalho Interno */
     .header-geip {
-        background-color: #ffffff;
         padding: 30px 40px;
+        border-bottom: 5px solid #018DA6;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 5px solid #018DA6;
     }
 
-    /* Área de Conteúdo */
-    .content-geip {
-        padding: 40px;
-        color: #333333;
+    /* Container para os componentes do Streamlit dentro do card */
+    .st-box {
+        padding: 20px 40px 40px 40px;
     }
 
-    /* Estilização do File Uploader para não ficar cinza */
-    section[data-testid="stFileUploadDropzone"] {
-        background-color: #f8f9fa;
-        border: 2px dashed #018DA6;
-    }
-
-    /* Botões Padrão GEIP */
-    .stButton>button {
-        background-color: #018DA6;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        padding: 12px 25px;
-        font-weight: bold;
-        width: 100%;
-        transition: 0.3s;
+    /* Customização do botão para seguir o padrão GEIP */
+    div.stButton > button {
+        background-color: #018DA6 !important;
+        color: white !important;
+        border: none !important;
+        font-weight: bold !important;
+        padding: 15px !important;
+        width: 100% !important;
+        border-radius: 8px !important;
     }
     
-    .stButton>button:hover {
-        background-color: #279eb3;
-        color: white;
-    }
-
-    /* Badge IA Corporativa */
-    .badge-ia {
-        background-color: #018DA6;
-        color: white;
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: bold;
-        letter-spacing: 1px;
+    div.stButton > button:hover {
+        background-color: #279eb3 !important;
     }
 
     .highlight-blue {
         color: #bff9ff;
-        font-size: 18px;
-        font-weight: bold;
         text-align: center;
+        font-weight: bold;
         margin-top: 30px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- ESTRUTURA UNIFICADA DO APP ---
-st.markdown(f"""
+# --- CONSTRUÇÃO DO LAYOUT ---
+# Abrimos a estrutura do card no topo
+st.markdown("""
     <div class="unified-card">
         <div class="header-geip">
             <div>
-                <h2 style="margin:0; color: #018DA6; font-size: 26px;">SISTEMA DE ANÁLISE GEIP</h2>
+                <h2 style="margin:0; color: #018DA6; font-size: 24px;">SISTEMA DE ANÁLISE GEIP</h2>
                 <p style="margin:0; color: #666; font-size: 14px;">Gestão de Infraestrutura e Projetos - FHEMIG</p>
             </div>
-            <div class="badge-ia">IA CORPORATIVA</div>
+            <div style="background-color: #018DA6; color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;">IA CORPORATIVA</div>
         </div>
-        <div class="content-geip">
-            <h3 style="margin-top:0; color: #018DA6; font-size: 20px;">📊 Gerador de Relatórios Estratégicos</h3>
-            <p style="color: #555;">Faça o upload do arquivo Excel exportado do Power BI para iniciar a redação do relatório executivo.</p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        <div class="st-box">
+            <h3 style="color: #018DA6; font-size: 18px; margin-bottom: 5px;">📊 Gerador de Relatórios Estratégicos</h3>
+            <p style="color: #555; font-size: 14px; margin-bottom: 25px;">Faça o upload do Excel exportado para iniciar a redação técnica.</p>
+""", unsafe_allow_html=True)
 
-# Agora o componente de upload fica logo abaixo, mas vamos usar um container para manter a margem
-with st.container():
-    col1, col2, col3 = st.columns([1, 8, 1])
-    with col2:
-        # Colocamos o seletor de arquivo aqui para alinhar com o card
-        api_key = st.secrets.get("GEMINI_API_KEY") or st.sidebar.text_input("Gemini API Key", type="password")
-        arquivo = st.file_uploader("", type="xlsx") # Título vazio pois já colocamos no HTML
+# Componentes Streamlit (Eles vão aparecer "dentro" do padding da st-box devido ao layout)
+api_key = st.secrets.get("GEMINI_API_KEY") or st.sidebar.text_input("Gemini API Key", type="password")
+arquivo = st.file_uploader("", type="xlsx", label_visibility="collapsed")
 
-        if arquivo and api_key:
-            if st.button("🚀 INICIAR ANÁLISE DE DADOS"):
-                # ... sua lógica da IA aqui ...
-                pass
+if arquivo and api_key:
+    if st.button("🚀 INICIAR ANÁLISE DE DADOS"):
+        try:
+            with st.spinner("A IA está analisando o dashboard..."):
+                # Lógica Real da IA
+                df = pd.read_excel(arquivo)
+                dados_csv = df.to_csv(index=False)
+                
+                client = genai.Client(api_key=api_key)
+                prompt = f"Atue como Analista Sênior da GEIP. Analise os dados e gere um relatório detalhado sem introduções. Dados: {dados_csv}"
+                
+                resposta = client.models.generate_content(model="gemini-2.0-flash-lite", contents=prompt)
+                
+                # Gera o PDF
+                pdf_output = criar_pdf_buffer(resposta.text)
+                
+                st.success("Relatório concluído com sucesso!")
+                st.download_button(
+                    label="📥 BAIXAR RELATÓRIO OFICIAL (PDF)",
+                    data=pdf_output,
+                    file_name="Relatorio_Executivo_GEIP.pdf",
+                    mime="application/pdf"
+                )
+        except Exception as e:
+            st.error(f"Erro no processamento: {e}")
 
-# --- RODAPÉ ---
+# Fechamos as divs do card
+st.markdown("</div></div>", unsafe_allow_html=True)
+
+# Rodapé fora do card
 st.markdown("""
-    <div style="text-align: center; margin-top: 40px;">
+    <div style="text-align: center; margin-top: 30px;">
         <p class="highlight-blue">“Transformando dados em decisões estratégicas para a infraestrutura.”</p>
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); width: 50%; margin: 20px auto;">
         <a href="https://fhemigmg.sharepoint.com/sites/GEIP" target="_blank" 
-           style="background-color: #018DA6; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">
+           style="background-color: #018DA6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block; margin-top: 15px;">
            Acessar Portal GEIP
         </a>
     </div>

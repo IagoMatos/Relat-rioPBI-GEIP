@@ -62,9 +62,14 @@ if arquivo and api_key:
                 dados_completos = df.to_csv(index=False)
                 
                 client = genai.Client(api_key=api_key)
-                # Bloco de diagnóstico (rode uma vez para conferir)
-                for m in client.models.list():
-                    print(f"Modelo disponível: {m.name}")
+
+                with st.expander("🛠️ Diagnóstico de Modelos Disponíveis"):
+                    try:
+                        modelos = client.models.list()
+                        for m in modelos:
+                            st.write(f"✅ {m.name}")
+                    except Exception as e:
+                        st.error(f"Erro ao listar modelos: {e}")
                 
                 prompt = f"Atue como Analista Sênior. Gere um relatório longo e detalhado sem introduções. Dados: {dados_completos}"
                 

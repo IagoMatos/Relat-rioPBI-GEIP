@@ -93,13 +93,16 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- CABEÇALHO DENTRO DO CARD ---
+# --- CABEÇALHO DENTRO DO CARD ---
 st.markdown("""
     <div class="header-divider" style="display: flex; justify-content: space-between; align-items: center;">
         <div>
             <h2 style="margin:0; color: #018DA6; font-size: 26px;">SISTEMA DE ANÁLISE GEIP</h2>
             <p style="margin:0; color: #666; font-size: 14px;">Gerência de Infraestrutura Predial - FHEMIG</p>
         </div>
-        <div style="background-color: #018DA6; color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;"></div>
+        
+        <img src="https://github.com/IagoMatos/Relat-rioPBI-GEIP/blob/main/logo_GeipIA.png" style="max-height: 45px; object-fit: contain;">
+        
     </div>
     <h3 style="color: #018DA6; font-size: 18px;">📊 Gerador de Relatórios Estratégicos</h3>
     <p style="color: #555; font-size: 14px; margin-bottom: 20px;">Faça o upload do Excel exportado para iniciar a redação técnica.</p>

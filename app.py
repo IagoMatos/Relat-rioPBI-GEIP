@@ -21,12 +21,21 @@ def get_image_base64(caminho_imagem):
     with open(caminho_imagem, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# Tenta carregar a imagem. Se o ficheiro não existir, usa a "pílula" de texto como plano B
+# 1. Carrega a Logo Principal
 try:
     logo_b64 = get_image_base64("logo_GeipIA.png")
     img_html = f'<img src="data:image/png;base64,{logo_b64}" style="max-height: 90px; object-fit: contain;">'
 except Exception:
     img_html = '<div style="background-color: #018DA6; color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;">IA CORPORATIVA</div>'
+
+# 2. Carrega o Ícone de Gráfico (Substitui o Emoji)
+try:
+    grafico_b64 = get_image_base64("GraficoBarra.png")
+    # A altura (height) foi ajustada para 24px para alinhar perfeitamente com o tamanho da fonte do título
+    img_grafico_html = f'<img src="data:image/png;base64,{grafico_b64}" style="height: 24px; vertical-align: middle; margin-right: 8px;">'
+except Exception:
+    img_grafico_html = '📊' # Se o arquivo não for encontrado, ele volta para o emoji como plano B
+
 
 def criar_pdf_buffer(texto):
     buffer = io.BytesIO()
@@ -109,6 +118,7 @@ st.markdown("""
 
 # --- CABEÇALHO DENTRO DO CARD ---
 
+# A tag <h3> agora usa flexbox para alinhar a imagem e o texto na mesma linha de forma elegante
 cabecalho_html = f"""
 <div class="header-divider" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
@@ -117,7 +127,7 @@ cabecalho_html = f"""
     </div>
     {img_html}
 </div>
-<h3 style="color: #018DA6; font-size: 18px;">📊 Gerador de Relatórios Estratégicos</h3>
+<h3 style="color: #018DA6; font-size: 18px; display: flex; align-items: center;">{img_grafico_html} Gerador de Relatórios Estratégicos</h3>
 <p style="color: #555; font-size: 14px; margin-bottom: 20px;">Faça o upload do Excel exportado para iniciar a redação técnica.</p>
 """
 

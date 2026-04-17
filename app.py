@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 import io
+import base64 # <-- NOVA BIBLIOTECA ADICIONADA AQUI
 from google import genai
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
@@ -13,6 +14,19 @@ st.set_page_config(
     page_icon="favicon.ico", 
     layout="centered"
 )
+
+# --- FUNÇÃO PARA LER IMAGEM LOCAL E CONVERTER PARA BASE64 ---
+@st.cache_data
+def get_image_base64(caminho_imagem):
+    with open(caminho_imagem, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+# Tenta carregar a imagem. Se o ficheiro não existir, usa a "pílula" de texto como plano B
+try:
+    logo_b64 = get_image_base64("logo_GeipIA.png")
+    img_html = f'<img src="data:image/png;base64,{logo_b64}" style="max-height: 45px; object-fit: contain;">'
+except Exception:
+    img_html = '<div style="background-color: #018DA6; color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;">IA CORPORATIVA</div>'
 
 def criar_pdf_buffer(texto):
     buffer = io.BytesIO()
@@ -37,7 +51,7 @@ def criar_pdf_buffer(texto):
     buffer.seek(0)
     return buffer
 
-# --- CSS NATIVO STREAMLIT (CORRIGIDO PARA O CARD BRANCO) ---
+# --- CSS NATIVO STREAMLIT ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap');
@@ -48,7 +62,7 @@ st.markdown("""
         font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
     }
 
-    /* 2. O Card Branco Central (Forçando em todas as versões do Streamlit) */
+    /* 2. O Card Branco Central */
     .block-container, [data-testid="stMainBlockContainer"] {
         background-color: #ffffff !important;
         border-radius: 12px !important;
@@ -82,7 +96,7 @@ st.markdown("""
         background-color: #279eb3 !important;
     }
 
-    /* Cor do texto do seletor de arquivo para não sumir no branco */
+    /* Cor do texto do seletor de arquivo */
     .st-emotion-cache-1wivap2 {
         color: #333333 !important;
     }
@@ -93,14 +107,15 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- CABEÇALHO DENTRO DO CARD ---
-st.markdown("""
+# O uso do 'f' antes das aspas permite injetar a variável {img_html} diretamente no HTML
+st.markdown(f"""
     <div class="header-divider" style="display: flex; justify-content: space-between; align-items: center;">
         <div>
             <h2 style="margin:0; color: #018DA6; font-size: 26px;">SISTEMA DE ANÁLISE GEIP</h2>
             <p style="margin:0; color: #666; font-size: 14px;">Gerência de Infraestrutura Predial - FHEMIG</p>
         </div>
         
-        <img src="logo_GeipIA.png" style="max-height: 45px; object-fit: contain;">
+        {img_html}
         
     </div>
     <h3 style="color: #018DA6; font-size: 18px;">📊 Gerador de Relatórios Estratégicos</h3>
@@ -114,7 +129,7 @@ arquivo = st.file_uploader("", type="xlsx", label_visibility="collapsed")
 if arquivo and api_key:
     if st.button("🚀 INICIAR ANÁLISE DE DADOS"):
         try:
-            with st.spinner("A IA está analisando o dashboard..."):
+            with st.spinner("A IA está a analisar o dashboard..."):
                 df = pd.read_excel(arquivo)
                 dados_csv = df.to_csv(index=False)
                 
@@ -136,7 +151,7 @@ if arquivo and api_key:
             if "429" in str(e):
                 st.error("⚠️ O limite de análises da sua chave foi atingido. Tente novamente mais tarde.")
             else:
-                st.error("⚠️ Ocorreu um erro ao processar os dados. Verifique sua chave de API ou a formatação da planilha.")
+                st.error("⚠️ Ocorreu um erro ao processar os dados. Verifique a sua chave de API ou a formatação da folha de cálculo.")
 
 # --- RODAPÉ ---
 st.markdown("""

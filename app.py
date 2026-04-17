@@ -32,7 +32,7 @@ except Exception:
 try:
     grafico_b64 = get_image_base64("GraficoBarra.png")
     # A altura (height) foi ajustada para 24px para alinhar perfeitamente com o tamanho da fonte do título
-    img_grafico_html = f'<img src="data:image/png;base64,{grafico_b64}" style="height: 24px; vertical-align: middle; margin-right: 8px;">'
+    img_grafico_html = f'<img src="data:image/png;base64,{grafico_b64}" style="height: 32px; vertical-align: middle; margin-right: 8px;">'
 except Exception:
     img_grafico_html = '📊' # Se o arquivo não for encontrado, ele volta para o emoji como plano B
 

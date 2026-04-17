@@ -61,19 +61,10 @@ if arquivo and api_key:
                 df = pd.read_excel(arquivo)
                 dados_completos = df.to_csv(index=False)
                 
-                client = genai.Client(api_key=api_key)
-
-                with st.expander("🛠️ Diagnóstico de Modelos Disponíveis"):
-                    try:
-                        modelos = client.models.list()
-                        for m in modelos:
-                            st.write(f"✅ {m.name}")
-                    except Exception as e:
-                        st.error(f"Erro ao listar modelos: {e}")
-                
+                client = genai.Client(api_key=api_key) 
                 prompt = f"Atue como Analista Sênior. Gere um relatório longo e detalhado sem introduções. Dados: {dados_completos}"
                 
-                resposta = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+                resposta = client.models.generate_content(model="gemini-2.0-flash-lite", contents=prompt)
                 pdf_output = criar_pdf_buffer(resposta.text)
                 
                 st.success("Relatório Concluído!")

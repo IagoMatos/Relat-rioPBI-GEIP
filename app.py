@@ -73,7 +73,7 @@ if arquivo and api_key:
                 
                 prompt = f"Atue como Analista Sênior. Gere um relatório longo e detalhado sem introduções. Dados: {dados_completos}"
                 
-                resposta = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+                resposta = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
                 pdf_output = criar_pdf_buffer(resposta.text)
                 
                 st.success("Relatório Concluído!")

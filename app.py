@@ -54,7 +54,7 @@ st.markdown("""
     }
     
     .stButton>button {
-        border-radius: 10px;
+        border-radius: 8px;
         background-color: #279eb3;
         color: white;
         font-weight: bold;
@@ -63,7 +63,6 @@ st.markdown("""
     
     .stButton>button:hover {
         background-color: #018DA6;
-        border-color: #018DA6;
     }
     </style>
     """, unsafe_allow_html=True)

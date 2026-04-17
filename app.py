@@ -44,7 +44,7 @@ st.markdown("""
     
     /* 1. Fundo Azul Escuro para toda a tela, incluindo a margem lateral */
     .stApp, [data-testid="stAppViewContainer"] {
-        background-color: #0c8398 !important;
+        background-color: #017d93 !important;
         font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
     }
 
@@ -99,7 +99,7 @@ st.markdown("""
             <h2 style="margin:0; color: #018DA6; font-size: 26px;">SISTEMA DE ANÁLISE GEIP</h2>
             <p style="margin:0; color: #666; font-size: 14px;">Gerência de Infraestrutura Predial - FHEMIG</p>
         </div>
-        <div style="background-color: #018DA6; color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;">IA CORPORATIVA</div>
+        <div style="background-color: #018DA6; color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;"></div>
     </div>
     <h3 style="color: #018DA6; font-size: 18px;">📊 Gerador de Relatórios Estratégicos</h3>
     <p style="color: #555; font-size: 14px; margin-bottom: 20px;">Faça o upload do Excel exportado para iniciar a redação técnica.</p>

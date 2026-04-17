@@ -8,7 +8,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 # Configuração visual do App
-st.set_page_config(page_title="Analista IA - FHEMIG", page_icon="🏢")
+st.set_page_config(page_title="Analista IA - GEIP", page_icon="🏢")
 
 def criar_pdf_buffer(texto):
     buffer = io.BytesIO()
@@ -22,7 +22,7 @@ def criar_pdf_buffer(texto):
         ))
 
     story = [
-        Paragraph("<b>FHEMIG - Relatório Executivo Gerencial</b>", styles["Heading1"]),
+        Paragraph("<b>GEIP - Relatório Executivo Gerencial</b>", styles["Heading1"]),
         Spacer(1, 20)
     ]
 
@@ -71,7 +71,7 @@ if arquivo and api_key:
                 st.download_button(
                     label="📥 Baixar PDF Oficial",
                     data=pdf_output,
-                    file_name="Relatorio_Executivo_FHEMIG.pdf",
+                    file_name="Relatorio_Executivo_GEIP.pdf",
                     mime="application/pdf"
                 )
         except Exception as e:

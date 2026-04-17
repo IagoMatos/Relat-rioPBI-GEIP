@@ -41,7 +41,7 @@ st.markdown("""
     
     /* Fundo Azul Escuro da GEIP para toda a tela */
     .stApp {
-        background-color: #023440;
+        background-color: #ffffff;
         font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
     }
 

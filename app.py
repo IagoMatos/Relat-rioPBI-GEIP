@@ -50,7 +50,7 @@ st.markdown("""
     <style>
 
     
-    .stTitle {
+    .stTitle>title {
         color: #018DA6;
     }
     

@@ -178,7 +178,7 @@ if arquivo and api_key:
                 BASE DE DADOS PARA ANÁLISE:
                 {dados_csv}"""
                 
-                resposta = client.models.generate_content(model="gemini-2.0-flash-lite", contents=prompt)
+                resposta = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
                 
                 pdf_output = criar_pdf_buffer(resposta.text)
                 

@@ -8,7 +8,6 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
-# Usamos 'centered' para o card não esticar muito em telas grandes
 st.set_page_config(page_title="Analista IA - GEIP", page_icon="🏢", layout="centered")
 
 def criar_pdf_buffer(texto):
@@ -39,18 +38,18 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap');
     
-    /* Fundo Azul Escuro da GEIP para toda a tela */
+    /* 1. Fundo Azul Escuro da GEIP para toda a tela (FORA DO CARD) */
     .stApp {
-        background-color: #ffffff;
+        background-color: #023440;
         font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
     }
 
-    /* Transforma o container central do Streamlit no nosso Card Branco */
+    /* 2. O Card Branco Central (ONDE FICAM AS INFORMAÇÕES) */
     [data-testid="block-container"] {
         background-color: #ffffff;
         border-radius: 12px;
         padding: 40px 50px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
         margin-top: 40px;
         margin-bottom: 40px;
     }
@@ -67,7 +66,7 @@ st.markdown("""
         background-color: #018DA6 !important;
         color: white !important;
         border: none !important;
-        font-weight: bolder !important;
+        font-weight: bold !important;
         padding: 15px !important;
         width: 100% !important;
         border-radius: 8px !important;
@@ -78,7 +77,7 @@ st.markdown("""
         background-color: #279eb3 !important;
     }
 
-    /* Ocultar a barra superior chata do Streamlit */
+    /* Ocultar a barra superior do Streamlit */
     header {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
@@ -93,10 +92,10 @@ st.markdown("""
         <div style="background-color: #018DA6; color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;">IA CORPORATIVA</div>
     </div>
     <h3 style="color: #018DA6; font-size: 18px;">📊 Gerador de Relatórios Estratégicos</h3>
-    <p style="color: #555; font-size: 14px; margin-bottom: 20px;">Faça o upload do Excel exportado para gerar o relatório.</p>
+    <p style="color: #555; font-size: 14px; margin-bottom: 20px;">Faça o upload do Excel exportado para iniciar a redação técnica.</p>
     """, unsafe_allow_html=True)
 
-# --- WIDGETS NATIVOS (Agora ficarão naturalmente dentro do card branco) ---
+# --- WIDGETS NATIVOS ---
 api_key = st.secrets.get("GEMINI_API_KEY") or st.text_input("Gemini API Key", type="password")
 arquivo = st.file_uploader("", type="xlsx", label_visibility="collapsed")
 
@@ -110,7 +109,6 @@ if arquivo and api_key:
                 client = genai.Client(api_key=api_key)
                 prompt = f"Atue como Analista Sênior da GEIP. Analise os dados e gere um relatório detalhado sem introduções. Dados: {dados_csv}"
                 
-                # Voltando para o modelo principal que funcionou para a sua chave
                 resposta = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
                 
                 pdf_output = criar_pdf_buffer(resposta.text)
@@ -123,7 +121,6 @@ if arquivo and api_key:
                     mime="application/pdf"
                 )
         except Exception as e:
-            # Tratamento de erro limpo sem vazar código no app
             if "429" in str(e):
                 st.error("⚠️ O limite de análises da sua chave foi atingido. Tente novamente mais tarde.")
             else:

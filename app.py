@@ -152,7 +152,31 @@ if arquivo and api_key:
                 dados_csv = df.to_csv(index=False)
                 
                 client = genai.Client(api_key=api_key)
-                prompt = f"Atue como Analista Sênior da GEIP. Analise os dados e gere um relatório detalhado sem introduções. Dados: {dados_csv}"
+                prompt = f"""Atue como um Consultor Estratégico e Analista Sênior da GEIP (Gerência de Infraestrutura Predial da FHEMIG). 
+                            Sua missão é processar a base de dados fornecida e redigir um Relatório Executivo Gerencial focado inteiramente na tomada de decisão técnica e financeira.
+                            
+                            DIRETRIZES DE ESTILO E TOM:
+                            1. Tom estritamente formal, impessoal, analítico e técnico.
+                            2. Seja objetivo. É terminantemente proibido redigir introduções genéricas, saudações, conclusões supérfluas ou jargões corporativos vazios. 
+                            3. Baseie todas as afirmações exclusivamente nos dados fornecidos.
+                            
+                            ESTRUTURA OBRIGATÓRIA DO RELATÓRIO:
+                            (Você deve utilizar exatamente esta estrutura, usando um único símbolo '#' para os títulos das seções)
+                            
+                            # Visão Geral do Portfólio
+                            [Apresente um sumário executivo conciso sobre o volume total de projetos/obras, status geral e montante financeiro global envolvido.]
+                            
+                            # Desempenho Financeiro e Execução
+                            [Analise a relação entre os valores contratados e liquidados/medidos. Identifique discrepâncias financeiras, projetos com alta ociosidade de recurso ou gargalos orçamentários.]
+                            
+                            # Análise de Cronograma e Prazos
+                            [Mapeie rigorosamente o cumprimento de prazos. Destaque projetos atrasados, em risco de estouro de cronograma ou paralisados, justificando com base nos dados.]
+                            
+                            # Matriz de Risco e Recomendações Estratégicas
+                            [Com base nos desvios financeiros e de prazo encontrados, liste em formato de tópicos (bullet points) as ações corretivas imediatas recomendadas para a gerência.]
+                            
+                            BASE DE DADOS PARA ANÁLISE:
+                            {dados_csv}"""
                 
                 resposta = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
                 

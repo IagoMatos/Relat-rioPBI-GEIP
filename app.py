@@ -177,7 +177,7 @@ if arquivo and api_key:
                 # Matriz de Risco e Recomendações Estratégicas
                 [Com base nos desvios financeiros e de prazo encontrados, liste em formato de tópicos (bullet points) as ações corretivas imediatas recomendadas para a gerência.]
 
-                
+                POR FIM PASSE COM UM OLHAR EXTREMAMENTE RIGOROSO PARA CHECAR SE NÃO HÁ NENHUM ERRO NA PLANILHA QUE POSSA CAUSAR ERROS NO POWER BI, (Como coisas mal formatadas, erros de digitação e etc) !important
                 
                 BASE DE DADOS PARA ANÁLISE:
                 {dados_csv}"""

@@ -150,6 +150,13 @@ if arquivo and api_key:
             with st.spinner("A IA está analisando o dashboard..."):
                 df = pd.read_excel(arquivo)
                 dados_csv = df.to_csv(index=False)
+
+                with st.spinner("Limpando e analisando os dados..."):
+                    df = pd.read_excel(arquivo)
+                    
+                    # --- TRATAMENTO PREVENTIVO PARA O POWER BI ---
+                    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else 
+                    dados_csv = df.to_csv(index=False)
                 
                 client = genai.Client(api_key=api_key)
                 prompt = f"""Atue como um Consultor Estratégico e Analista Sênior da GEIP (Gerência de Infraestrutura Predial da FHEMIG). 
@@ -177,7 +184,7 @@ if arquivo and api_key:
                 # Matriz de Risco e Recomendações Estratégicas
                 [Com base nos desvios financeiros e de prazo encontrados, liste em formato de tópicos (bullet points) as ações corretivas imediatas recomendadas para a gerência.]
 
-                POR FIM PASSE COM UM OLHAR EXTREMAMENTE RIGOROSO PARA CHECAR SE NÃO HÁ NENHUM ERRO NA PLANILHA QUE POSSA CAUSAR ERROS NO POWER BI, (Como coisas mal formatadas, erros de digitação e etc) !important
+                [Analise a integridade da base fornecida. Identifique e liste rigorosamente inconsistências que possam corromper a leitura de dados em sistemas de BI, tais como: valores numéricos formatados como texto, datas inválidas ou em formatos discrepantes, campos em branco em colunas críticas, e valores absurdos (outliers irreais). Indique exatamente onde o erro parece estar.]
                 
                 BASE DE DADOS PARA ANÁLISE:
                 {dados_csv}"""

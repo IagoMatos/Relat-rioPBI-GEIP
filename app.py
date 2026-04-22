@@ -147,7 +147,7 @@ arquivo = st.file_uploader("", type="xlsx", label_visibility="collapsed")
 if arquivo and api_key:
     if st.button(" INICIAR ANÁLISE DE DADOS"):
         try:
-            with st.spinner("A IA está a analisar o dashboard..."):
+            with st.spinner("A IA está analisando o dashboard..."):
                 df = pd.read_excel(arquivo)
                 dados_csv = df.to_csv(index=False)
                 

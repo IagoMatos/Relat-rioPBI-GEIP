@@ -155,7 +155,7 @@ if arquivo and api_key:
                 prompt = f"""Atue como um Consultor Estratégico e Analista Sênior da GEIP (Gerência de Infraestrutura Predial da FHEMIG). 
                 Sua missão é processar a base de dados fornecida e redigir um Relatório Executivo Gerencial focado inteiramente na tomada de decisão técnica e financeira.
 
-                GARANTA QUE A ANÁLISE CAIBA EM EXATAMENTE UMA FOLHA DO PDF E QUE FIQUE SOBRANDO EXATAMENTE UMA LINHA.
+                GARANTA QUE A ANÁLISE CAIBA EM EXATAMENTE UMA FOLHA DO PDF E QUE FIQUE SOBRANDO EXATAMENTE DUAS LINHAS.
                 
                 DIRETRIZES DE ESTILO E TOM:
                 1. Tom estritamente formal, impessoal, analítico e técnico.

@@ -202,7 +202,10 @@ if arquivo and api_key and aba_selecionada:
                        - Identifique o padrão e agrupe a informação (Ex: "A coluna 'X' possui 45 células vazias, principalmente a partir da linha 200").
                        - INTELIGÊNCIA DE CONTEXTO: Ignore células vazias em "Cabeçalhos de Seção", linhas de "Total/Subtotal" ou "NÃO POSSUI".
                     
-                    É EXPRESSAMENTE PROIBIDO o uso de formato JSON, chaves ou aspas de código. Use tópicos limpos.
+                       DIRETRIZES DE ESTILO (SUPRESSÃO DE PREÂMBULO):
+                        - É EXPRESSAMENTE PROIBIDO gerar parágrafos introdutórios, saudações, deduções sobre o negócio da FHEMIG ou resumos de contexto.
+                        - O SEU TEXTO DEVE COMEÇAR DIRETAMENTE NO PRIMEIRO TÍTULO.
+                        - É EXPRESSAMENTE PROIBIDO o uso de formato JSON, chaves ou aspas de código. Use tópicos limpos.
 
                     ESTRUTURA OBRIGATÓRIA (Use '#' para títulos):
                     # Resumo da Qualidade de Dados

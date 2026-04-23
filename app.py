@@ -173,7 +173,7 @@ if arquivo and api_key:
                 df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
                 
                 # 3. Converte para texto apenas depois de limpo
-                dados_csv = df.to_csv(index=False)
+                dados_csv = df.to_csv(index=True)
                 
                 # 4. Envia para a IA
                 client = genai.Client(api_key=api_key)
@@ -202,9 +202,19 @@ if arquivo and api_key:
                 # Matriz de Risco e Recomendações Estratégicas
                 [Com base nos desvios financeiros e de prazo encontrados, liste em formato de tópicos (bullet points) as ações corretivas imediatas recomendadas para a gerência.]
 
-                # Auditoria de Dados
-                [Analise a integridade da base fornecida. Identifique e liste rigorosamente inconsistências que possam corromper a leitura de dados em sistemas de BI, tais como: valores numéricos formatados como texto, datas inválidas ou em formatos discrepantes, campos em branco em colunas críticas, e valores absurdos (outliers irreais). Indique exatamente onde o erro parece estar.]
+                # Auditoria de Integridade de Dados
+                [Analise rigorosamente a base fornecida. Os dados possuem uma coluna de 'Index' (numeração da linha). 
+                Sua tarefa é identificar inconsistências que impeçam o processamento no Power BI.
+                Para cada erro encontrado, você deve obrigatoriamente reportar no seguinte formato:
+                - Localização: (Ex: Linha X, Coluna Y)
+                - Descrição do Erro: (Ex: Valor numérico contém caracteres inválidos ou formato de data incorreto)
+                - Impacto: (Ex: Causará erro de conversão de tipo no Power BI)
                 
+                Foque especialmente em:
+                1. Números formatados com '.' (ponto) em campos que deveriam ser moeda/decimal.
+                2. Células vazias em colunas obrigatórias.
+                3. Datas fora do padrão institucional.]
+                               
                 BASE DE DADOS PARA ANÁLISE:
                 {dados_csv}"""
                 

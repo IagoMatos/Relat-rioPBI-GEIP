@@ -18,33 +18,39 @@ st.set_page_config(
 # --- FUNÇÃO PARA LER IMAGEM LOCAL E CONVERTER PARA BASE64 ---
 @st.cache_data
 def get_image_base64(caminho_imagem):
-    with open(caminho_imagem, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode()
+    try:
+        with open(caminho_imagem, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    except Exception:
+        return None
 
-# Logo Principal
-try:
-    logo_b64 = get_image_base64("design/logo_GeipIA.png")
+# Carregamento de Imagens
+logo_b64 = get_image_base64("design/logo_GeipIA.png")
+if logo_b64:
     img_html = f'<img src="data:image/png;base64,{logo_b64}" style="max-height: 90px; object-fit: contain;">'
-except Exception:
+else:
     img_html = '<div style="background-color: #018DA6; color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;">IA CORPORATIVA</div>'
 
-# Ícone de Gráfico
-try:
-    grafico_b64 = get_image_base64("design/GraficoBarra.png")
-    # A altura (height) foi ajustada para 24px para alinhar perfeitamente com o tamanho da fonte do título
+grafico_b64 = get_image_base64("design/GraficoBarra.png")
+if grafico_b64:
     img_grafico_html = f'<img src="data:image/png;base64,{grafico_b64}" style="height: 32px; vertical-align: middle; margin-right: 8px;">'
-except Exception:
-    img_grafico_html = '📊' # Se o arquivo não for encontrado, ele volta para o emoji 
-
+else:
+    img_grafico_html = '📊'
 
 def criar_pdf_buffer(texto):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
+    
     if 'Disclaimer' not in styles:
         styles.add(ParagraphStyle(name='Disclaimer', parent=styles['Normal'], fontSize=8, textColor='gray', alignment=1, fontName='Helvetica-Oblique'))
+    
     story = [Paragraph("<b>GEIP - Relatório Executivo Gerencial</b>", styles["Heading1"]), Spacer(1, 20)]
-    texto_tratado = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)
+    
+    # LIMPEZA MAGISTRAL: Remove resquícios de JSON ou chaves antes de desenhar o PDF
+    texto_limpo = texto.replace('{', '').replace('}', '').replace('"', '').replace('json', '').replace('relatorio_executivo:', '')
+    texto_tratado = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto_limpo)
+    
     for linha in texto_tratado.split('\n'):
         linha = linha.strip()
         if not linha:
@@ -53,6 +59,7 @@ def criar_pdf_buffer(texto):
         estilo = styles["Heading2"] if linha.startswith('#') else styles["Normal"]
         linha = linha.replace('#', '').strip()
         story.append(Paragraph(linha, estilo))
+    
     story.append(Spacer(1, 30))
     story.append(HRFlowable(width="100%", thickness=1, color="lightgrey"))
     story.append(Paragraph("Este relatório foi gerado por Inteligência Artificial e não substitui a análise humana.", styles["Disclaimer"]))
@@ -60,18 +67,14 @@ def criar_pdf_buffer(texto):
     buffer.seek(0)
     return buffer
 
-# --- CSS NATIVO STREAMLIT ---
+# --- CSS NATIVO ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap');
-    
-    /* 1. Fundo Azul Escuro para toda a tela, incluindo a margem lateral */
     .stApp, [data-testid="stAppViewContainer"] {
         background-color: #017d93 !important;
         font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
     }
-
-    /* 2. O Card Branco Central */
     .block-container, [data-testid="stMainBlockContainer"] {
         background-color: #ffffff !important;
         border-radius: 12px !important;
@@ -82,15 +85,11 @@ st.markdown("""
         margin-bottom: 50px !important;
         zoom: 1.1 !important;
     }
-
-    /* Linha divisória do cabeçalho */
     .header-divider {
         border-bottom: 5px solid #018DA6;
         margin-bottom: 30px;
         padding-bottom: 15px;
     }
-
-/* Botões Padrão GEIP */
     div.stButton > button {
         background-color: #018DA6 !important;
         color: white !important;
@@ -100,32 +99,17 @@ st.markdown("""
         border-radius: 8px !important;
         transition: 0.3s;
     }
-    
-    div.stButton > button:hover {
-        background-color: #279eb3 !important;
-    }
-
-    /* O SEGREDO: Forçando a tipografia e o negrito diretamente no texto interno do botão */
     div.stButton > button p {
         font-family: 'Trebuchet MS', 'Segoe UI', sans-serif !important;
-        font-weight: 700 !important; /* 700 é o código exato para bold garantido */
+        font-weight: 700 !important;
         font-size: 16px !important;
         margin: 0 !important;
     }
-
-    /* Cor do texto do seletor de arquivo */
-    .st-emotion-cache-1wivap2 {
-        color: #333333 !important;
-    }
-
-    /* Ocultar a barra superior do Streamlit */
     header {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
-# --- CABEÇALHO DENTRO DO CARD ---
-
-# A tag <h3> agora usa flexbox para alinhar a imagem e o texto na mesma linha de forma elegante
+# --- INTERFACE ---
 cabecalho_html = f"""
 <div class="header-divider" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
@@ -135,83 +119,44 @@ cabecalho_html = f"""
     {img_html}
 </div>
 <h3 style="color: #018DA6; font-size: 18px; display: flex; align-items: center;">{img_grafico_html} Gerador de Relatórios Estratégicos</h3>
-<p style="color: #555; font-size: 14px; margin-bottom: 20px;">Faça o upload do Excel exportado para iniciar a redação técnica.</p>
 """
-
 st.markdown(cabecalho_html, unsafe_allow_html=True)
 
-# --- WIDGETS NATIVOS ---
-# Adicionamos o .strip() aqui para blindar contra espaços acidentais!
 api_key = st.text_input("🔑 Insira a Nova Chave API aqui:", type="password").strip()
-arquivo = st.file_uploader("", type="xlsx", label_visibility="collapsed")
-
-# --- INÍCIO DO BOTÃO TEMPORÁRIO DE TESTE ---
-if api_key:
-    if st.button("🔍 TESTE DE CONEXÃO: Listar Modelos"):
-        try:
-            client = genai.Client(api_key=api_key)
-            # Busca e guarda todos os nomes de modelos permitidos
-            modelos = [model.name for model in client.models.list()]
-            
-            st.success("✅ Chave válida! Veja os modelos liberados para você abaixo:")
-            st.write(modelos) # Imprime a lista direto na tela branca do app
-            
-        except Exception as e:
-            st.error(f"❌ Erro ao validar a chave: {e}")
-# --- FIM DO BOTÃO TEMPORÁRIO DE TESTE ---
-
+arquivo = st.file_uploader("Faça o upload do Excel exportado para iniciar a redação técnica.", type="xlsx")
 
 if arquivo and api_key:
     if st.button("🚀 INICIAR ANÁLISE DE DADOS"):
-        # ... (O resto do seu código continua exatamente igual daqui para baixo) ...
         try:
             with st.spinner("Limpando e analisando os dados..."):
-                    # 1. Lê o arquivo
-                    df = pd.read_excel(arquivo)
-                    
-                    # 2. Faz a limpeza preventiva do Pandas
-                    df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
-                    
-                    # 3. A MÁGICA UNIVERSAL: O Pandas calcula a linha física do Excel
-                    # Como o Python começa no 0 e o Excel tem cabeçalho, somamos 2.
-                    df.index = df.index + 2 
-                    df.index.name = 'Linha_Excel' # Dá um nome claro para a IA entender
-                    
-                    # 4. Converte para CSV enviando essa nova coluna de referência
-                    dados_csv = df.to_csv(index=True)
+                df = pd.read_excel(arquivo)
+                df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
                 
-               # 4. Envia para a IA com Prompt Refinado
-                prompt = f"""Atue como um Consultor Estratégico e Analista Sênior da GEIP.
+                # Cálculo Universal da Linha do Excel
+                df.index = df.index + 2 
+                df.index.name = 'Linha_Excel'
+                dados_csv = df.to_csv(index=True)
+
+                client = genai.Client(api_key=api_key)
+                prompt = f"""Atue como um Consultor Estratégico e Analista Sênior da GEIP. 
                 Sua missão é ler a base de dados anexa, deduzir o seu contexto de negócio e gerar um relatório executivo padronizado.
 
                 DIRETRIZES GERAIS DE AUDITORIA DE DADOS:
-                1. Procure por quebras de padrão lógicas em qualquer coluna: textos em campos que deveriam ser numéricos, formatos de data corrompidos ou células em branco em colunas fundamentais.
-                2. A primeira coluna dos dados chama-se 'Linha_Excel'. Ela contém a localização exata do dado no arquivo físico.
-                3. É EXPRESSAMENTE PROIBIDO o uso de formato JSON, chaves ({{ }}) ou aspas de código na sua resposta. Use apenas texto corrido e tópicos.
-                4. Analise apenas os dados reais. Se a base estiver 100% íntegra e sem erros de formatação, escreva apenas: "Nenhuma inconsistência técnica detectada na base de dados."
+                1. Procure por quebras de padrão lógicas em qualquer coluna: textos em campos numéricos, datas corrompidas ou células vazias.
+                2. A primeira coluna chama-se 'Linha_Excel'. Use-a para indicar a localização exata de falhas.
+                3. É EXPRESSAMENTE PROIBIDO o uso de formato JSON, chaves ({{ }}) ou aspas de código. Use apenas texto humano e tópicos.
+                4. Analise apenas dados reais. Se a base estiver correta, declare-a íntegra.
 
-                ESTRUTURA OBRIGATÓRIA DO RELATÓRIO EXECUTIVO:
-                (Utilize um único símbolo '#' para os títulos das seções)
-                
+                ESTRUTURA OBRIGATÓRIA (Use '#' para títulos):
                 # Visão Geral do Portfólio
-                [Apresente um sumário executivo deduzindo o tema principal da base, os volumes gerais e o status macro das informações.]
-                
                 # Desempenho e Métricas Principais
-                [Analise os indicadores mais relevantes encontrados (sejam eles financeiros, quantitativos ou de prazos), apontando gargalos ou discrepâncias lógicas.]
-                
                 # Matriz de Risco e Alertas Estratégicos
-                [Com base nos dados, liste em tópicos os riscos de negócio ou pontos de atenção gerencial imediata.]
-                
                 # Auditoria de Integridade de Dados
-                [Se houver erros técnicos de digitação/formatação que impeçam a leitura por sistemas de BI, reporte-os no formato: "Localização: Linha X, Coluna Y - Problema: Descrição do erro". Caso contrário, declare a base íntegra.]
 
-                BASE DE DADOS PARA ANÁLISE:
+                BASE DE DADOS:
                 {dados_csv}"""
                 
-                # Usando o modelo VÁLIDO E ESTÁVEL
-                # Substitua a linha antiga por esta:
                 resposta = client.models.generate_content(model="gemini-2.5-flash-lite", contents=prompt)
-                
                 pdf_output = criar_pdf_buffer(resposta.text)
                 
                 st.success("Relatório concluído com sucesso!")
@@ -222,21 +167,15 @@ if arquivo and api_key:
                     mime="application/pdf"
                 )
         except Exception as e:
-            # Se der erro, mostramos o erro real no terminal para sabermos o que é
-            print(f"Erro detalhado: {e}") 
-            if "429" in str(e):
-                st.error("⚠️ O limite de análises da sua chave foi atingido. Tente novamente mais tarde.")
-            else:
-                # Agora o erro na tela vai te mostrar O QUE realmente falhou!
-                st.error(f"⚠️ Ocorreu um erro: {e}")
+            st.error(f"⚠️ Ocorreu um erro: {e}")
 
 # --- RODAPÉ ---
 st.markdown("""
     <div style="text-align: center; margin-top: 40px;">
         <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
-        <p style="color: rgba(0,0,0,0.42); font-style: italic ;font-size: 14px; font-weight: 500;">'Relatórios gerados por IA podem conter erros e não substiuem a análise Humana.'</p>
+        <p style="color: rgba(0,0,0,0.42); font-style: italic ;font-size: 14px;">'Relatórios gerados por IA podem conter erros e não substituem a análise Humana.'</p>
         <a href="https://fhemigmg.sharepoint.com/sites/GEIP" target="_blank" 
-           style="background-color: #018DA6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block; margin-top: 10px;">
+           style="background-color: #018DA6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
            Acessar Portal GEIP
         </a>
     </div>

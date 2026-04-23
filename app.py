@@ -157,15 +157,14 @@ except KeyError:
     st.error("⚠️ O sistema está em manutenção. A chave da API não foi encontrada no cofre.")
     api_key = None
 
-# --- FUNÇÃO AUXILIAR DE LIMPEZA ---
-# Criamos esta função para não repetir código nos dois botões
-def processar_planilha(file):
-    df = pd.read_excel(file)
+# --- FUNÇÃO AUXILIAR DE LIMPEZA (Atualizada) ---
+def processar_planilha(file, nome_aba):
+    # Agora o Pandas lê especificamente a aba que o utilizador selecionou
+    df = pd.read_excel(file, sheet_name=nome_aba)
     df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
     df.index = df.index + 2 
     df.index.name = 'Linha_Excel'
     return df.to_csv(index=True)
-
 
 if arquivo and api_key:
     st.markdown("<br>", unsafe_allow_html=True)

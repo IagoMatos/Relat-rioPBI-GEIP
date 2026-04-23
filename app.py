@@ -174,7 +174,7 @@ if arquivo and api_key and aba_selecionada:
                     # Matriz de Risco e Alertas Estratégicos
                     BASE: {dados_csv}"""
                     
-                    resposta = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+                    resposta = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
                     pdf = criar_pdf_buffer(resposta.text, "GEIP - Relatório Executivo Gerencial")
                     st.success("Relatório pronto!")
                     st.download_button("📥 BAIXAR RELATÓRIO", pdf, "Relatorio_Executivo.pdf", "application/pdf")
@@ -195,7 +195,7 @@ if arquivo and api_key and aba_selecionada:
                     # Recomendações de Formatação
                     BASE: {dados_csv}"""
                     
-                    resposta = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+                    resposta = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
                     pdf = criar_pdf_buffer(resposta.text, "GEIP - Auditoria de Integridade de Dados")
                     st.success("Auditoria pronta!")
                     st.download_button("📥 BAIXAR AUDITORIA", pdf, "Auditoria_Dados.pdf", "application/pdf")

@@ -210,7 +210,7 @@ if arquivo and api_key:
                 
                 # Usando o modelo VÁLIDO E ESTÁVEL
                 # Substitua a linha antiga por esta:
-                resposta = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+                resposta = client.models.generate_content(model="gemini-2.5-flash-lite", contents=prompt)
                 
                 pdf_output = criar_pdf_buffer(resposta.text)
                 

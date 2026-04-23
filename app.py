@@ -7,6 +7,7 @@ from google import genai
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.colors import HexColor
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -37,33 +38,56 @@ if grafico_b64:
 else:
     img_grafico_html = '📊'
 
-# --- FUNÇÃO DO PDF (AGORA ACEITA TÍTULOS DINÂMICOS) ---
+# --- FUNÇÃO DO PDF (AGORA COM TIPOGRAFIA E ESTILOS AVANÇADOS) ---
+from reportlab.lib.colors import HexColor # Precisamos importar as cores no topo do arquivo!
+
 def criar_pdf_buffer(texto, titulo_documento="GEIP - Relatório Executivo Gerencial"):
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
     styles = getSampleStyleSheet()
     
-    if 'Disclaimer' not in styles:
-        styles.add(ParagraphStyle(name='Disclaimer', parent=styles['Normal'], fontSize=8, textColor='gray', alignment=1, fontName='Helvetica-Oblique'))
+    # 1. CRIANDO OS NOSSOS ESTILOS PERSONALIZADOS (A Mágica da Leitura)
+    styles.add(ParagraphStyle(name='CustomNormal', parent=styles['Normal'], fontSize=11, leading=16, spaceAfter=8, textColor='#333333'))
     
-    # O título agora muda dependendo do botão clicado
-    story = [Paragraph(f"<b>{titulo_documento}</b>", styles["Heading1"]), Spacer(1, 20)]
+    # Estilo para os Tópicos (Bullets) com recuo elegante
+    styles.add(ParagraphStyle(name='CustomBullet', parent=styles['Normal'], fontSize=11, leading=16, spaceAfter=6, leftIndent=20, textColor='#333333'))
     
+    # Estilo para os Títulos (Azul GEIP)
+    styles.add(ParagraphStyle(name='CustomHeading', parent=styles['Heading2'], fontSize=14, leading=18, spaceBefore=20, spaceAfter=10, textColor=HexColor('#018DA6')))
+    
+    styles.add(ParagraphStyle(name='Disclaimer', parent=styles['Normal'], fontSize=8, textColor='gray', alignment=1, fontName='Helvetica-Oblique'))
+    
+    story = [Paragraph(f"<b>{titulo_documento}</b>", styles["Heading1"]), Spacer(1, 10)]
+    
+    # Limpeza de código residual
     texto_limpo = texto.replace('{', '').replace('}', '').replace('"', '').replace('json', '').replace('relatorio_executivo:', '')
     texto_tratado = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto_limpo)
     
+    # 2. O NOVO TRADUTOR INTELIGENTE
     for linha in texto_tratado.split('\n'):
         linha = linha.strip()
+        
         if not linha:
-            story.append(Spacer(1, 10))
-            continue
-        estilo = styles["Heading2"] if linha.startswith('#') else styles["Normal"]
-        linha = linha.replace('#', '').strip()
-        story.append(Paragraph(linha, estilo))
+            continue # Ignora linhas totalmente vazias, o 'spaceAfter' dos estilos já resolve o respiro
+            
+        # Se for um título
+        if linha.startswith('#'):
+            linha = linha.replace('#', '').strip()
+            story.append(Paragraph(f"<b>{linha}</b>", styles["CustomHeading"]))
+            
+        # Se for um tópico/lista da IA
+        elif linha.startswith('* ') or linha.startswith('- '):
+            linha = linha[2:].strip() # Arranca o asterisco da IA
+            story.append(Paragraph(f"&bull; {linha}", styles["CustomBullet"])) # Usa o bullet oficial do ReportLab com recuo
+            
+        # Se for um texto normal
+        else:
+            story.append(Paragraph(linha, styles["CustomNormal"]))
     
     story.append(Spacer(1, 30))
     story.append(HRFlowable(width="100%", thickness=1, color="lightgrey"))
     story.append(Paragraph("Este relatório foi gerado por Inteligência Artificial e não substitui a análise humana.", styles["Disclaimer"]))
+    
     doc.build(story)
     buffer.seek(0)
     return buffer

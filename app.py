@@ -166,42 +166,45 @@ if arquivo and api_key:
         # ... (O resto do seu código continua exatamente igual daqui para baixo) ...
         try:
             with st.spinner("Limpando e analisando os dados..."):
-                # 1. Lê o arquivo UMA ÚNICA VEZ
-                df = pd.read_excel(arquivo)
-                
-                # 2. Faz a limpeza preventiva do Pandas
-                df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
-                
-                # 3. Converte para texto apenas depois de limpo
-                dados_csv = df.to_csv(index=True)
+                    # 1. Lê o arquivo
+                    df = pd.read_excel(arquivo)
+                    
+                    # 2. Faz a limpeza preventiva do Pandas
+                    df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
+                    
+                    # 3. A MÁGICA UNIVERSAL: O Pandas calcula a linha física do Excel
+                    # Como o Python começa no 0 e o Excel tem cabeçalho, somamos 2.
+                    df.index = df.index + 2 
+                    df.index.name = 'Linha_Excel' # Dá um nome claro para a IA entender
+                    
+                    # 4. Converte para CSV enviando essa nova coluna de referência
+                    dados_csv = df.to_csv(index=True)
                 
                # 4. Envia para a IA com Prompt Refinado
                 client = genai.Client(api_key=api_key)
                 prompt = f"""Atue como um Consultor Estratégico e Analista Sênior da GEIP. 
-                Sua missão é realizar uma auditoria técnica na base de dados anexa para garantir a compatibilidade com o Power BI.
+                Sua missão é ler a base de dados anexa, deduzir o seu contexto de negócio e gerar um relatório executivo padronizado.
 
-                REGRAS DE CONTAGEM DE LINHAS:
-                - A primeira coluna dos dados fornecidos é o 'ID de Processamento' (Index).
-                - IMPORTANTE: Para localizar o erro no Excel original, some 2 ao número do ID de Processamento. 
-                (Exemplo: Se o ID for 49, o erro está na Linha 51 do Excel).
+                DIRETRIZES GERAIS DE AUDITORIA DE DADOS:
+                1. Procure por quebras de padrão lógicas em qualquer coluna: textos em campos que deveriam ser numéricos, formatos de data corrompidos ou células em branco em colunas fundamentais.
+                2. A primeira coluna dos dados chama-se 'Linha_Excel'. Ela contém a localização exata do dado no arquivo físico.
+                3. É EXPRESSAMENTE PROIBIDO o uso de formato JSON, chaves ({{ }}) ou aspas de código na sua resposta. Use apenas texto corrido e tópicos.
+                4. Analise apenas os dados reais. Se a base estiver 100% íntegra e sem erros de formatação, escreva apenas: "Nenhuma inconsistência técnica detectada na base de dados."
 
-                DIRETRIZES DE AUDITORIA:
-                1. Analise apenas os dados reais. Não invente erros se a base estiver correta.
-                2. Se encontrar inconsistências (pontos onde deveriam ser vírgulas, textos em campos de valor, ou datas inválidas), reporte-as.
-                3. Se a base de dados estiver 100% correta, escreva apenas: "Nenhuma inconsistência técnica detectada na base de dados."
-
-                ESTRUTURA DO RELATÓRIO DE ERROS (Apenas se houver erros):
-                - Localização Exata: (Linha do Excel e Nome da Coluna)
-                - Natureza do Problema: (Descrição técnica do desvio)
-                - Sugestão de Correção: (Como formatar para o Power BI aceitar)
-
-                ESTRUTURA DO RELATÓRIO EXECUTIVO:
-                (Utilize '#' para os títulos das seções)
+                ESTRUTURA OBRIGATÓRIA DO RELATÓRIO EXECUTIVO:
+                (Utilize um único símbolo '#' para os títulos das seções)
+                
                 # Visão Geral do Portfólio
-                # Desempenho Financeiro e Execução
-                # Análise de Cronograma e Prazos
-                # Matriz de Risco e Recomendações Estratégicas
+                [Apresente um sumário executivo deduzindo o tema principal da base, os volumes gerais e o status macro das informações.]
+                
+                # Desempenho e Métricas Principais
+                [Analise os indicadores mais relevantes encontrados (sejam eles financeiros, quantitativos ou de prazos), apontando gargalos ou discrepâncias lógicas.]
+                
+                # Matriz de Risco e Alertas Estratégicos
+                [Com base nos dados, liste em tópicos os riscos de negócio ou pontos de atenção gerencial imediata.]
+                
                 # Auditoria de Integridade de Dados
+                [Se houver erros técnicos de digitação/formatação que impeçam a leitura por sistemas de BI, reporte-os no formato: "Localização: Linha X, Coluna Y - Problema: Descrição do erro". Caso contrário, declare a base íntegra.]
 
                 BASE DE DADOS PARA ANÁLISE:
                 {dados_csv}"""

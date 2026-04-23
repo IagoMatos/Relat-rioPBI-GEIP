@@ -38,49 +38,35 @@ if grafico_b64:
 else:
     img_grafico_html = '📊'
 
-# --- FUNÇÃO DO PDF (AGORA COM TIPOGRAFIA E ESTILOS AVANÇADOS) ---
-from reportlab.lib.colors import HexColor # Precisamos importar as cores no topo do arquivo!
-
+# --- FUNÇÃO DO PDF COM ESTILOS AVANÇADOS ---
 def criar_pdf_buffer(texto, titulo_documento="GEIP - Relatório Executivo Gerencial"):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
     styles = getSampleStyleSheet()
     
-    # 1. CRIANDO OS NOSSOS ESTILOS PERSONALIZADOS (A Mágica da Leitura)
+    # Estilos Personalizados
     styles.add(ParagraphStyle(name='CustomNormal', parent=styles['Normal'], fontSize=11, leading=16, spaceAfter=8, textColor='#333333'))
-    
-    # Estilo para os Tópicos (Bullets) com recuo elegante
     styles.add(ParagraphStyle(name='CustomBullet', parent=styles['Normal'], fontSize=11, leading=16, spaceAfter=6, leftIndent=20, textColor='#333333'))
-    
-    # Estilo para os Títulos (Azul GEIP)
     styles.add(ParagraphStyle(name='CustomHeading', parent=styles['Heading2'], fontSize=14, leading=18, spaceBefore=20, spaceAfter=10, textColor=HexColor('#018DA6')))
-    
     styles.add(ParagraphStyle(name='Disclaimer', parent=styles['Normal'], fontSize=8, textColor='gray', alignment=1, fontName='Helvetica-Oblique'))
     
     story = [Paragraph(f"<b>{titulo_documento}</b>", styles["Heading1"]), Spacer(1, 10)]
     
-    # Limpeza de código residual
+    # Limpeza de resíduos técnicos
     texto_limpo = texto.replace('{', '').replace('}', '').replace('"', '').replace('json', '').replace('relatorio_executivo:', '')
     texto_tratado = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto_limpo)
     
-    # 2. O NOVO TRADUTOR INTELIGENTE
     for linha in texto_tratado.split('\n'):
         linha = linha.strip()
-        
         if not linha:
-            continue # Ignora linhas totalmente vazias, o 'spaceAfter' dos estilos já resolve o respiro
+            continue
             
-        # Se for um título
         if linha.startswith('#'):
             linha = linha.replace('#', '').strip()
             story.append(Paragraph(f"<b>{linha}</b>", styles["CustomHeading"]))
-            
-        # Se for um tópico/lista da IA
         elif linha.startswith('* ') or linha.startswith('- '):
-            linha = linha[2:].strip() # Arranca o asterisco da IA
-            story.append(Paragraph(f"&bull; {linha}", styles["CustomBullet"])) # Usa o bullet oficial do ReportLab com recuo
-            
-        # Se for um texto normal
+            linha = linha[2:].strip()
+            story.append(Paragraph(f"&bull; {linha}", styles["CustomBullet"]))
         else:
             story.append(Paragraph(linha, styles["CustomNormal"]))
     
@@ -91,6 +77,14 @@ def criar_pdf_buffer(texto, titulo_documento="GEIP - Relatório Executivo Gerenc
     doc.build(story)
     buffer.seek(0)
     return buffer
+
+# --- FUNÇÃO AUXILIAR DE PROCESSAMENTO ---
+def processar_planilha(file, nome_aba):
+    df = pd.read_excel(file, sheet_name=nome_aba)
+    df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
+    df.index = df.index + 2 
+    df.index.name = 'Linha_Excel'
+    return df.to_csv(index=True)
 
 # --- CSS NATIVO ---
 st.markdown("""
@@ -134,7 +128,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- INTERFACE PRINCIPAL ---
+# --- INTERFACE ---
 cabecalho_html = f"""
 <div class="header-divider" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
@@ -147,119 +141,69 @@ cabecalho_html = f"""
 """
 st.markdown(cabecalho_html, unsafe_allow_html=True)
 
-# Removemos a caixa de senha. O usuário vê apenas o botão de upload.
-arquivo = st.file_uploader("Faça o upload do Excel exportado para iniciar a redação técnica.", type="xlsx")
-
-# O sistema busca a chave silenciosamente no cofre do Streamlit
+# Configuração de Chave Silenciosa
 try:
     api_key = st.secrets["GEMINI_API_KEY"]
 except KeyError:
-    st.error("⚠️ O sistema está em manutenção. A chave da API não foi encontrada no cofre.")
+    st.error("⚠️ Manutenção: Chave API não encontrada no cofre.")
     api_key = None
 
-# --- FUNÇÃO AUXILIAR DE LIMPEZA (Atualizada) ---
-def processar_planilha(file, nome_aba):
-    # Agora o Pandas lê especificamente a aba que o utilizador selecionou
-    df = pd.read_excel(file, sheet_name=nome_aba)
-    df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
-    df.index = df.index + 2 
-    df.index.name = 'Linha_Excel'
-    return df.to_csv(index=True)
+arquivo = st.file_uploader("Faça o upload do Excel exportado para iniciar a redação técnica.", type="xlsx")
 
-if arquivo and api_key:
+aba_selecionada = None
+if arquivo:
+    xl = pd.ExcelFile(arquivo)
+    lista_de_abas = xl.sheet_names
+    aba_selecionada = st.selectbox("Selecione a aba (planilha) que contém os dados:", lista_de_abas)
+
+if arquivo and api_key and aba_selecionada:
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Adicionamos um 'gap' para afastar os botões de forma simétrica
     col1, col2 = st.columns(2, gap="medium")
     
-    # ==========================================
-    # BOTÃO 1: RELATÓRIO EXECUTIVO DE NEGÓCIOS
-    # ==========================================
     with col1:
-        # Forçamos o botão a usar 100% do container
         if st.button("📊 RELATÓRIO EXECUTIVO", use_container_width=True):
             try:
-                with st.spinner("Analisando o cenário de negócios..."):
-                    dados_csv = processar_planilha(arquivo)
+                with st.spinner("Analisando cenário de negócios..."):
+                    dados_csv = processar_planilha(arquivo, aba_selecionada)
                     client = genai.Client(api_key=api_key)
                     
-                    prompt_executivo = f"""Atue como um Consultor Estratégico e Analista Sênior da GEIP. 
-                    Sua missão é deduzir o contexto de negócio da base e gerar um relatório executivo padronizado.
-                    
-                    DIRETRIZES:
-                    1. Foco exclusivo em métricas, desempenho, finanças, prazos e visão geral de portfólio.
-                    2. IGNORE qualquer erro de formatação de dados, células vazias ou tipos de dados errados. Isso não é uma auditoria técnica.
-                    3. É EXPRESSAMENTE PROIBIDO o uso de formato JSON ou chaves. Use texto humano.
-
-                    ESTRUTURA OBRIGATÓRIA (Use '#' para títulos):
+                    prompt = f"""Atue como um Consultor Estratégico da GEIP. Deduza o contexto e gere um relatório executivo.
+                    IGNORE erros técnicos de dados. Foco em métricas e prazos.
                     # Visão Geral do Portfólio
                     # Desempenho e Métricas Principais
                     # Matriz de Risco e Alertas Estratégicos
-
-                    BASE DE DADOS:
-                    {dados_csv}"""
+                    BASE: {dados_csv}"""
                     
-                    resposta = client.models.generate_content(model="gemini-2.5-flash-lite", contents=prompt_executivo)
-                    
-                    # Gera PDF com Título Específico
-                    pdf_output = criar_pdf_buffer(resposta.text, titulo_documento="GEIP - Relatório Executivo Gerencial")
-                    
-                    st.success("Relatório gerado com sucesso!")
-                    st.download_button(
-                        label="📥 BAIXAR RELATÓRIO EXECUTIVO",
-                        data=pdf_output,
-                        file_name="Relatorio_Executivo_GEIP.pdf",
-                        mime="application/pdf"
-                    )
+                    resposta = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+                    pdf = criar_pdf_buffer(resposta.text, "GEIP - Relatório Executivo Gerencial")
+                    st.success("Relatório pronto!")
+                    st.download_button("📥 BAIXAR RELATÓRIO", pdf, "Relatorio_Executivo.pdf", "application/pdf")
             except Exception as e:
-                st.error(f"⚠️ Erro ao processar relatório: {e}")
+                st.error(f"⚠️ Erro: {e}")
 
-    # ==========================================
-    # BOTÃO 2: AUDITORIA DE INTEGRIDADE DE DADOS
-    # ==========================================
     with col2:
-        # Forçamos o botão a usar 100% do container
         if st.button("🔍 AUDITORIA DE DADOS", use_container_width=True):
             try:
-                with st.spinner("Auditando as células e formatações..."):
-                    dados_csv = processar_planilha(arquivo)
+                with st.spinner("Auditando integridade técnica..."):
+                    dados_csv = processar_planilha(arquivo, aba_selecionada)
                     client = genai.Client(api_key=api_key)
                     
-                    prompt_auditoria = f"""Atue como um Engenheiro de Dados Sênior da GEIP. 
-                    Sua missão é realizar uma varredura estritamente técnica na base de dados para garantir a compatibilidade com o sistema Power BI.
-                    
-                    DIRETRIZES:
-                    1. Foco exclusivo em quebras de padrão lógicas: textos em campos numéricos, datas corrompidas, outliers absurdos ou células vazias.
-                    2. IGNORE o contexto de negócios, montantes financeiros globais ou visão de portfólio.
-                    3. A primeira coluna chama-se 'Linha_Excel'. Use-a para indicar a localização exata de falhas.
-                    4. Se a base estiver perfeita, declare explicitamente: "Nenhuma inconsistência técnica detectada."
-                    5. É EXPRESSAMENTE PROIBIDO o uso de formato JSON.
-
-                    ESTRUTURA OBRIGATÓRIA (Use '#' para títulos):
+                    prompt = f"""Atue como Engenheiro de Dados da GEIP. Varredura técnica para Power BI.
+                    Localize erros usando a coluna 'Linha_Excel'.
                     # Resumo da Qualidade de Dados
-                    # Inconsistências Técnicas Encontradas (Aponte Linha_Excel e o problema exato)
+                    # Inconsistências Técnicas Encontradas
                     # Recomendações de Formatação
-
-                    BASE DE DADOS:
-                    {dados_csv}"""
+                    BASE: {dados_csv}"""
                     
-                    resposta = client.models.generate_content(model="gemini-2.5-flash-lite", contents=prompt_auditoria)
-                    
-                    # Gera PDF com Título Específico para a Auditoria
-                    pdf_output = criar_pdf_buffer(resposta.text, titulo_documento="GEIP - Auditoria de Integridade de Dados")
-                    
-                    st.success("Auditoria concluída com sucesso!")
-                    st.download_button(
-                        label="📥 BAIXAR RELATÓRIO DE AUDITORIA",
-                        data=pdf_output,
-                        file_name="Auditoria_Dados_GEIP.pdf",
-                        mime="application/pdf"
-                    )
+                    resposta = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+                    pdf = criar_pdf_buffer(resposta.text, "GEIP - Auditoria de Integridade de Dados")
+                    st.success("Auditoria pronta!")
+                    st.download_button("📥 BAIXAR AUDITORIA", pdf, "Auditoria_Dados.pdf", "application/pdf")
             except Exception as e:
-                st.error(f"⚠️ Erro ao auditar dados: {e}")
+                st.error(f"⚠️ Erro: {e}")
 
 # --- RODAPÉ ---
-st.markdown("""
+st.markdown(f"""
     <div style="text-align: center; margin-top: 40px;">
         <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
         <p style="color: rgba(0,0,0,0.42); font-style: italic ;font-size: 14px;">'Relatórios gerados por IA podem conter erros e não substituem a análise Humana.'</p>
